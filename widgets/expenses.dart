@@ -90,7 +90,7 @@ class _ExpensesState extends State<Expenses> {
       ),
       body: Column(
         children: [
-          Chart(expenses: _registeredExpenses),
+          Chartss(expenses: _registeredExpenses),
           Expanded(
             child: mainContent,
           ),
@@ -173,7 +173,6 @@ class Chart extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    // BAR
                     SizedBox(
                       height: 100,
                       child: Align(
@@ -208,5 +207,151 @@ class Chart extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class Charts extends StatelessWidget {
+  const Charts({super.key, required this.expenses});
+
+  final List<Expense> expenses;
+
+   IconData _getIcon(Category category) {
+    switch (category) {
+      case Category.food:
+        return Icons.lunch_dining;
+      case Category.travel:
+        return Icons.flight_takeoff;
+      case Category.leisure:
+        return Icons.movie;
+      case Category.work:
+        return Icons.work;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final categoryTotals = Category.values.map((cat) {
+      return expenses.where((e) => e.category == cat)
+                     .fold(0.0, (sum, e) => sum + e.amount);
+    }).toList();
+
+    final maxTotal = categoryTotals.reduce((a, b) => a > b ? a : b);
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      height: 180,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          for (var i = 0; i < Category.values.length; i++)
+            Expanded(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: FractionallySizedBox(
+                      alignment: Alignment.bottomCenter,
+                      heightFactor: maxTotal == 0 ? 0 : categoryTotals[i] / maxTotal,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Icon(_getIcon(Category.values[i])), 
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class Chartss extends StatelessWidget{
+
+  const Chartss({super.key, required this.expenses});
+
+  final List<Expense> expenses;
+
+  IconData _getIcon(Category category) {
+    switch (category) {
+      case Category.food:
+        return Icons.lunch_dining;
+      case Category.travel:
+        return Icons.flight_takeoff;
+      case Category.leisure:
+        return Icons.movie;
+      case Category.work:
+        return Icons.work;
+    }
+  }
+double _getCategoryTotal(Category category) {
+  double sum = 0.0;
+  
+  for (final expense in expenses) {
+    if (expense.category == category) {
+      sum += expense.amount; 
+    }
+  }
+  
+  return sum; 
+}
+  @override
+Widget build(BuildContext context) {
+  double maxTotal = 0;
+  for (final category in Category.values) {
+    double sum = 0;
+    for (final expense in expenses) {
+      if (expense.category == category) {
+        sum += expense.amount;
+      }
+    }
+    if (sum > maxTotal) {
+      maxTotal = sum; 
+    }
+  }
+
+  return Card( child: Container(
+    height: 180, 
+    padding: const EdgeInsets.all(16),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        for (final category in Category.values)
+          Expanded(
+            child: Column(
+              children: [
+                Expanded( 
+                  child: FractionallySizedBox(
+                    alignment: Alignment.bottomCenter,
+                    heightFactor: maxTotal == 0 ? 0 : _getCategoryTotal(category) / maxTotal,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Icon(_getIcon(category)),
+              ],
+            ),
+          ),
+      ],
+    ),
+  )
+);
   }
 }
